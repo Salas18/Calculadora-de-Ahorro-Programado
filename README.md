@@ -169,3 +169,39 @@ OK
 - **Miguel Angel Salazar**
 
 Proyecto académico desarrollado como práctica de modelado financiero aplicado al ahorro programado y buenas prácticas de programación en Python.
+
+
+-------------
+## Ejecución
+
+### Prerrequisitos
+
+Asegúrate de tener Python 3.x instalado. Para la interfaz gráfica, también necesitas instalar Kivy:
+
+```bash
+pip install kivy
+```
+
+### Interfaz gráfica (GUI)
+
+El GUI está construido con Kivy. Para ejecutarlo, corre el siguiente comando **desde la raíz del proyecto**:
+
+```bash
+python src/ui/gui/gui_calculadora.py
+```
+
+Una vez abierta la aplicación, encontrarás cuatro campos: la meta de ahorro (monto total que deseas alcanzar), el plazo en meses, un abono extra opcional y el mes en que se realizará dicho abono. Si no tienes abono extra, ingresa `0` en los dos últimos campos. Al presionar el botón **"Calcular Ahorro"**, la aplicación mostrará el monto que debes ahorrar cada mes para alcanzar tu meta.
+
+### Consola
+
+Si prefieres usar la versión de línea de comandos, ejecuta:
+
+```bash
+python src/ui/console.py
+```
+
+El programa te pedirá los mismos datos de forma interactiva: meta de ahorro, plazo en meses, abono extra y el mes del abono extra. Al finalizar, mostrará el ahorro mensual necesario.
+
+> En ambos casos, es importante ejecutar los comandos desde la raíz del proyecto (`Calculadora-de-Ahorro-Programado/`) para que las importaciones funcionen correctamente.
+
+REALIZADO POR: SEBASTIAN ARISTIZABAL ARISTIZABAL E ISABELLA QUINTERO GUTIERREZ
