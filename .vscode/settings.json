@@ -1,0 +1,17 @@
+{
+    "python.testing.unittestArgs": [
+        "-v",
+        "-s",
+<<<<<<< HEAD
+        ".",
+        "-p",
+        "*test*.py"
+=======
+        "./Diseño_pruebas_logica",
+        "-p",
+        "test_*.py"
+>>>>>>> 5a5ad119a202a8051f5414e828adae2926bfed29
+    ],
+    "python.testing.pytestEnabled": false,
+    "python.testing.unittestEnabled": true
+}

@@ -1,0 +1,11 @@
+**build
+**dist
+**__pycache__
+**.pytest_cache
+**.kivy
+**venv
+**env
+**.env
+***.pyc
+***.pyo
+**.vscode
