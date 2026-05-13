@@ -222,7 +222,7 @@ python -m unittest discover -s tests -p "test*.py"
 ## 👨‍💻 Autores
 
 **Equipo de Desarrollo:**
-- **Jose Angel Sanchez**
+- **Jose Angel Martinez**
 - **Miguel Angel Salazar**
 - **Sebastian Aristizabal Aristizabal**
 - **Isabella Quintero Gutierrez**
