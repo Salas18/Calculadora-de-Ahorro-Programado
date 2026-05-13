@@ -31,6 +31,62 @@ Todos los valores monetarios de salida se redondean a **2 decimales** para garan
 
 ---
 
+## 🗄️ Base de Datos y Persistencia (PostgreSQL)
+
+Para cumplir con la persistencia de datos solicitada en la rúbrica, el sistema se integra con una base de datos PostgreSQL alojada en **Render**. 
+
+### 1. Creación de Tablas (SQL)
+Ejecute el siguiente script en su gestor de base de datos para habilitar la estructura necesaria:
+
+```sql
+-- Tabla de usuarios
+CREATE TABLE usuarios (
+    id_usuario SERIAL PRIMARY KEY,
+    nombre VARCHAR(100) NOT NULL,
+    email VARCHAR(150) UNIQUE NOT NULL
+);
+
+-- Tabla de metas de ahorro
+CREATE TABLE metas_ahorro (
+    id_meta SERIAL PRIMARY KEY,
+    id_usuario INT REFERENCES usuarios(id_usuario) ON DELETE CASCADE,
+    meta DECIMAL(18,2) NOT NULL,
+    plazo INT NOT NULL,
+    extra DECIMAL(18,2) DEFAULT 0,
+    mes_extra INT DEFAULT 0,
+    cuota_mensual DECIMAL(18,2)
+);
+
+-- Tabla de historial de cálculos
+CREATE TABLE historial_calculos (
+    id_historial SERIAL PRIMARY KEY,
+    id_usuario INT REFERENCES usuarios(id_usuario),
+    meta DECIMAL(18,2),
+    plazo INT,
+    extra DECIMAL(18,2),
+    mes_extra INT,
+    cuota_mensual DECIMAL(18,2),
+    fecha_calculo TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+```
+
+### 2. Conexión Segura con `secret_config.py`
+El sistema utiliza un archivo de configuración externa para proteger las credenciales y cumplir con el requisito de no exponer datos privados:
+1. Cree un archivo llamado `secret_config.py` en la raíz del proyecto.
+2. Agregue este archivo a su `.gitignore`.
+3. Utilice la siguiente plantilla para establecer la conexión:
+
+```python
+# Instrucciones: Reemplace los valores con sus credenciales reales de Render
+PGDATABASE = "nombre_de_tu_db"
+PGUSER = "tu_usuario"
+PGPASSWORD = "tu_password_secreto"
+PGHOST = "tu_host_de_render"
+PGPORT = "5432"
+```
+
+---
+
 ## 🔄 Flujo de Ejecución del Algoritmo
 
 1. Recepción de los parámetros de configuración del ahorro por parte del usuario.
@@ -38,45 +94,36 @@ Todos los valores monetarios de salida se redondean a **2 decimales** para garan
 3. Determinación de los intereses ganados por el abono extraordinario a lo largo del tiempo restante.
 4. Estimación del factor matemático de acumulación de la anualidad.
 5. Cálculo y despeje de la cuota mensual requerida para cubrir la diferencia exacta.
-6. Retorno del valor a pagar en consola o impresión del respectivo código de error si las reglas se incumplen.
+6. Guardado en la base de datos (Render).
+7. Retorno del valor a pagar o impresión del respectivo código de error si las reglas se incumplen.
 
 ---
 
 ## 🏗️ Arquitectura del Proyecto y Responsabilidades
 
-El sistema sigue el principio de **separación de responsabilidades (SRP)**, dividiendo el proyecto en tres capas principales: Core (Lógica), UI (Interfaz) y Tests (Pruebas).
+El sistema sigue el principio de **separación de responsabilidades (SRP)**, dividiendo el proyecto en tres capas principales: Core/Model (Lógica), UI (Interfaz) y Tests (Pruebas).
 
 ```text
 CALCULADORA_AHORRO_PROGRAMADO/
 │
 ├── src/
-│   ├── core/
-│   │   └── logica.py            
-│   │
+│   ├── controller/
+│   │   ├── usuario_controller.py  # Persistencia de usuarios en BD
+│   │   └── ahorro_controller.py   # Guardado de metas en BD
+│   ├── model/
+│   │   ├── usuario.py             # Objeto Usuario
+│   │   └── ahorro.py              # Lógica financiera (Core)
 │   └── ui/
-│       └── console.py           
+│       ├── console.py             # Interfaz de comandos
+│       └── gui/                   # Interfaz gráfica (Kivy)
 │
 ├── tests/
-│   └── test_ahorro_programado.py 
+│   ├── __init__.py                
+│   └── test_db.py                 # 9 Pruebas integrales requeridas
 │
+├── secret_config.py               # Credenciales (Ignorado en Git)
 └── README.md
 ```
-
-### 📦 1. Capa Core (`src/core/logica.py`)
-Contiene la **lógica de negocio del sistema** y las excepciones personalizadas. 
-
-| Método | Responsabilidad |
-|------|------|
-| `__init__()` | Inicializa los datos con Type Hints para asegurar los tipos correctos. |
-| `_validar_datos()` | Función privada que aísla la lógica de validación (Fail-Fast). |
-| `calcular_cuota_mensual()` | Ejecuta el cálculo financiero principal aplicando las fórmulas matemáticas. |
-
-### 🖥️ 2. Capa UI (`src/ui/console.py`)
-Contiene la **interfaz de usuario por consola**.
-* **Responsabilidades:** Solicitar datos numéricos de forma segura, mostrar el menú interactivo, invocar a la lógica de negocio y atrapar las excepciones personalizadas para mostrar mensajes de error amigables al usuario.
-
-### 🧪 3. Capa Tests (`tests/test_ahorro_programado.py`)
-Contiene la **suite de 11 pruebas unitarias automatizadas** usando la librería `unittest`. Cubre casos estándar, inyecciones de capital totales y parciales, diferencias de centavos, y verifica que todos los errores se disparen correctamente.
 
 ---
 
@@ -109,56 +156,66 @@ Si alguna condición falla, el sistema lanza **excepciones personalizadas** (Ej:
 
 ## ▶️ Ejecución de la Aplicación
 
-Para ejecutar la calculadora desde la consola, ubícate en la raíz del proyecto y ejecuta:
+### Prerrequisitos
+Asegúrate de tener Python 3.x instalado. Para la interfaz gráfica y la base de datos, instala las dependencias:
+
+```bash
+pip install kivy psycopg2
+```
+
+### Interfaz gráfica (GUI)
+El GUI está construido con Kivy. Para ejecutarlo, corre el siguiente comando **desde la raíz del proyecto**:
+
+```bash
+python src/ui/gui/gui_calculadora.py
+```
+
+Una vez abierta la aplicación, encontrarás los campos necesarios para ingresar tu meta de ahorro. Al presionar **"Calcular Ahorro"**, la aplicación mostrará el monto que debes ahorrar cada mes y gestionará el guardado en la base de datos.
+
+### Consola
+Si prefieres usar la versión de línea de comandos, ejecuta:
 
 ```bash
 python src/ui/console.py
 ```
 
-**Ejemplo de interacción:**
-```text
-===================================
-   CALCULADORA DE AHORRO PROGRAMADO 
-===================================
-
-Ingrese la meta de ahorro ($): 1100000
-Ingrese el plazo en meses: 6
-Ingrese el abono extra (0 si no hay): 0
-Ingrese el mes del abono extra (0 si no hay): 0
-
-✅ Cálculo exitoso
-Debes ahorrar mensualmente: $179,925.80
-```
+El programa te pedirá los mismos datos de forma interactiva.
 
 ---
 
 ## 🧪 Ejecución de Pruebas Unitarias
 
-Para ejecutar el entorno de pruebas automatizadas y verificar la salud del código, utiliza:
-
-```bash
-python -m unittest discover -s src/tests -v
+**Ejecución Estándar**  
+Este comando ejecuta las 9 pruebas (3 de insertar, 3 de buscar y 3 de modificar) de forma silenciosa, mostrándote los puntos de éxito:
+```powershell
+python -m unittest tests.test_db
 ```
 
-Salida esperada:
-```text
-.....
-----------------------------------------------------------------------
-Ran 11 tests in 0.002s
-
-OK
+**Ejecución Detallada (Recomendada para la entrega)**  
+Usa la bandera `-v` (verbose) para que el sistema liste cada prueba individualmente y confirme que tanto los casos normales como los de error están pasando:
+```powershell
+python -m unittest -v tests.test_db
 ```
+
+**Descubrimiento Automático**  
+Si decides agregar más archivos de prueba en la carpeta `tests`, este comando encontrará y ejecutará todos automáticamente:
+```powershell
+python -m unittest discover -s tests -p "test*.py"
+```
+
+> **Nota Técnica:** Asegúrate de que tu entorno virtual (`.venv`) esté activado y que te encuentres en la raíz de la carpeta `Calculadora-de-Ahorro-Programado` para que las importaciones de `src` y `secret_config` funcionen correctamente. Si usas PowerShell y tienes problemas de importación, puedes usar: `$env:PYTHONPATH = "."; python -m unittest tests.test_db`
 
 ---
 
 ## 🧼 Principios de Código Limpio Aplicados
 
-- ✔️ Programación Orientada a Objetos (POO).
+- ✔️ Programación Orientada a Objetos (POO) y Arquitectura MVC.
 - ✔️ Separación de responsabilidades.
 - ✔️ Validaciones robustas y tipado estricto (Type Hints).
 - ✔️ Excepciones personalizadas con contexto.
 - ✔️ Eliminación de "Números Mágicos" usando constantes.
-- ✔️ Nombres de variables y funciones descriptivos.
+- ✔️ Protección de credenciales usando `secret_config.py` y `.gitignore`.
+- ✔️ Fixtures en pruebas (`setUp`) para limpieza automática de datos.
 
 ---
 
@@ -167,41 +224,7 @@ OK
 **Equipo de Desarrollo:**
 - **Jose Angel Sanchez**
 - **Miguel Angel Salazar**
+- **Sebastian Aristizabal Aristizabal**
+- **Isabella Quintero Gutierrez**
 
 Proyecto académico desarrollado como práctica de modelado financiero aplicado al ahorro programado y buenas prácticas de programación en Python.
-
-
--------------
-## Ejecución
-
-### Prerrequisitos
-
-Asegúrate de tener Python 3.x instalado. Para la interfaz gráfica, también necesitas instalar Kivy:
-
-```bash
-pip install kivy
-```
-
-### Interfaz gráfica (GUI)
-
-El GUI está construido con Kivy. Para ejecutarlo, corre el siguiente comando **desde la raíz del proyecto**:
-
-```bash
-python src/ui/gui/gui_calculadora.py
-```
-
-Una vez abierta la aplicación, encontrarás cuatro campos: la meta de ahorro (monto total que deseas alcanzar), el plazo en meses, un abono extra opcional y el mes en que se realizará dicho abono. Si no tienes abono extra, ingresa `0` en los dos últimos campos. Al presionar el botón **"Calcular Ahorro"**, la aplicación mostrará el monto que debes ahorrar cada mes para alcanzar tu meta.
-
-### Consola
-
-Si prefieres usar la versión de línea de comandos, ejecuta:
-
-```bash
-python src/ui/console.py
-```
-
-El programa te pedirá los mismos datos de forma interactiva: meta de ahorro, plazo en meses, abono extra y el mes del abono extra. Al finalizar, mostrará el ahorro mensual necesario.
-
-> En ambos casos, es importante ejecutar los comandos desde la raíz del proyecto (`Calculadora-de-Ahorro-Programado/`) para que las importaciones funcionen correctamente.
-
-REALIZADO POR: SEBASTIAN ARISTIZABAL ARISTIZABAL E ISABELLA QUINTERO GUTIERREZ
