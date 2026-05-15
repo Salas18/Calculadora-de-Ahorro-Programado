@@ -1,14 +1,11 @@
-import unittest
 import sys
-import psycopg2
 import os
-from pathlib import Path
+import unittest
+import psycopg2
 
-# Configuración de rutas
-ruta_proyecto = r"C:\Users\jose1\trabajo2\Calculadora-de-Ahorro-Programado"
-if ruta_proyecto not in sys.path:
-    sys.path.insert(0, ruta_proyecto)
-    sys.path.insert(0, os.path.join(ruta_proyecto, "src"))
+ruta_raiz = os.path.abspath(os.path.join(os.path.dirname(__file__), '../..'))
+sys.path.append(ruta_raiz)
+sys.path.append(os.path.join(ruta_raiz, 'src'))
 
 import secret_config
 from src.model.usuario import Usuario

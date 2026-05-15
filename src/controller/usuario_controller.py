@@ -1,4 +1,11 @@
-﻿import psycopg2
+﻿import sys
+import os
+
+ruta_raiz = os.path.abspath(os.path.join(os.path.dirname(__file__), '../..'))
+sys.path.append(ruta_raiz)
+sys.path.append(os.path.join(ruta_raiz, 'src'))
+
+import psycopg2
 import secret_config
 from src.model.usuario import Usuario
 
