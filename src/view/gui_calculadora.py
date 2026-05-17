@@ -1,6 +1,10 @@
 import sys
 import os
-#sys.path.append("src")
+
+# Le enseñamos a Python a subir dos carpetas hacia atrás para encontrar la raíz del proyecto
+ruta_raiz = os.path.abspath(os.path.join(os.path.dirname(__file__), '../..'))
+sys.path.append(ruta_raiz)
+sys.path.append(os.path.join(ruta_raiz, 'src'))
 
 from core.logica import (
     AhorroProgramado,

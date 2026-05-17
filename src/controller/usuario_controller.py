@@ -11,6 +11,38 @@ from src.model.usuario import Usuario
 
 class UsuarioController:
     @staticmethod
+    def crear_tablas():
+        import os
+        
+        ruta_sql = os.path.abspath(os.path.join(os.path.dirname(__file__), '../../sql'))
+        
+       
+        archivos = ['01_usuarios.sql', '02_metas_ahorro.sql', '03_historial_calculos.sql']
+        
+        try:
+            connection = psycopg2.connect(
+                host=secret_config.PGHOST,
+                database=secret_config.PGDATABASE,
+                user=secret_config.PGUSER,
+                password=secret_config.PGPASSWORD,
+                port=secret_config.PGPORT
+            )
+            cursor = connection.cursor()
+            
+
+            for archivo in archivos:
+                ruta_archivo = os.path.join(ruta_sql, archivo)
+                with open(ruta_archivo, 'r', encoding='utf-8') as f:
+                    sql_query = f.read()
+                    cursor.execute(sql_query)
+                    
+            connection.commit()
+            connection.close()
+            print("\n✅ ¡Tablas creadas exitosamente en Render desde Python!")
+            
+        except Exception as e:
+            print(f"\n❌ Error al crear las tablas: {e}")
+    @staticmethod
     def obtener_conexion():
         return psycopg2.connect(
             host=secret_config.PG_HOST,
@@ -55,3 +87,39 @@ class UsuarioController:
         conn.commit()
         cursor.close()
         conn.close()
+    
+    @staticmethod
+    def crear_tablas():
+        import os
+        
+        ruta_sql = os.path.abspath(os.path.join(os.path.dirname(__file__), '../../sql'))
+        
+        
+        archivos = ['usuarios.sql', 'metas_ahorro.sql', 'historial_calculos.sql']
+        
+        try:
+        
+            connection = psycopg2.connect(
+                host=secret_config.PG_HOST,
+                database=secret_config.PG_DATABASE,
+                user=secret_config.PG_USER,
+                password=secret_config.PG_PASSWORD,
+                port=secret_config.PG_PORT
+            )
+            cursor = connection.cursor()
+            
+            
+            for archivo in archivos:
+                ruta_archivo = os.path.join(ruta_sql, archivo)
+                with open(ruta_archivo, 'r', encoding='utf-8') as f:
+                    sql_query = f.read()
+                    cursor.execute(sql_query)
+                    
+            connection.commit()
+            connection.close()
+            print("\n✅ ¡Tablas creadas exitosamente en Render desde Python!")
+            
+        except Exception as e:
+            print(f"\n❌ Error al crear las tablas: {e}")
+
+    
