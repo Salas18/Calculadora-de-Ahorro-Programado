@@ -62,9 +62,9 @@ secret_config.py
 # Instrucciones:
 # Reemplace los valores con sus credenciales reales de Render
 
-PGDATABASE = "nombre_de_tu_db"
-PGUSER = "tu_usuario"
-PGPASSWORD = "tu_password_secreto"
+PGDATABASE = "calculadora-ahorro"
+PGUSER = "salas18"
+PGPASSWORD = "OyXLN6OLFMdldi0HA5GKwcA6GWeB7Mg0"
 PGHOST = "dpg-d7ln7667r5hc73c2j1pg-a.oregon-postgres.render.com"
 PGPORT = "5432"
 ```
