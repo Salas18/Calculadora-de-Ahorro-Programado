@@ -30,82 +30,55 @@ $$C = \frac{(Meta - VF_{extra}) \times i}{(1 + i)^n - 1}$$
 Todos los valores monetarios de salida se redondean a **2 decimales** para garantizar precisión contable.
 
 ---
-# 🗄️ Base de Datos y Persistencia (PostgreSQL)
+## 🗄️ Base de Datos y Persistencia (PostgreSQL)
 
-Para cumplir con la persistencia de datos solicitada en la rúbrica, el sistema se integra con una base de datos PostgreSQL alojada en **Render**.
+Para cumplir con la persistencia de datos solicitada en la rúbrica, el sistema se integra con una base de datos PostgreSQL alojada en **Render**. 
 
----
+### 1. Configuración de conexión
 
-# 1. Configuración de conexión
-
-El sistema utiliza un archivo de configuración externa para proteger las credenciales y cumplir con el requisito de no exponer datos privados.
-
-## Pasos
-
-1. Copia el archivo:
-
-```bash
-secret_config_sample.py
-```
-
-a:
-
-```bash
-secret_config.py
-```
-
-2. Asegúrate de incluir `secret_config.py` en tu archivo `.gitignore`.
-
-3. Abre `secret_config.py` y escribe las credenciales reales de PostgreSQL:
+El sistema utiliza un archivo de configuración externa para proteger las credenciales y cumplir con el requisito de no exponer datos privados:
+1. Copia `secret_config_sample.py` a `secret_config.py`.
+2. Asegúrate de que `secret_config.py` esté incluido en tu `.gitignore`.
+3. Abre `secret_config.py` y escribe estos datos (reemplazando con tus credenciales reales):
 
 ```python
-# Instrucciones:
-# Reemplace los valores con sus credenciales reales de Render
-
-PGDATABASE = "calculadora-ahorro"
+# Instrucciones: Reemplace los valores con sus credenciales reales de Render
+PGDATABASE = "calculadora_ahorro"
 PGUSER = "salas18"
 PGPASSWORD = "OyXLN6OLFMdldi0HA5GKwcA6GWeB7Mg0"
 PGHOST = "dpg-d7ln7667r5hc73c2j1pg-a.oregon-postgres.render.com"
 PGPORT = "5432"
 ```
 
-> No necesitas usar comandos adicionales ni variables de entorno.  
-> Solo asegúrate de tener Python instalado correctamente.
+No necesitas usar comandos extra ni variables de entorno. Solo asegúrate de tener Python instalado.
 
----
+### 2. Crear las tablas
 
-# 2. Scripts SQL (Carpeta `sql/`)
+Si la base de datos ya existe, puedes crear las tablas desde Python con este comando en la raíz del proyecto:
 
-Aplicando principios de **Código Limpio**, las sentencias SQL no están quemadas dentro del código Python.  
-En su lugar, todos los scripts fueron separados en la carpeta `sql/`.
+```bash
+python -c "from src.controller.usuario_controller import UsuarioController; UsuarioController.crear_tablas()"
+```
 
-## Orden de ejecución
-
-Ejecuta los scripts en este orden estricto:
+O bien, si prefieres usar los archivos SQL aplicando los principios de Código Limpio, abre la terminal en la carpeta del proyecto y ejecuta en este orden estricto:
 
 ```bash
 psql -d calculadora_ahorro_programado -f sql/01_usuarios.sql
-
 psql -d calculadora_ahorro_programado -f sql/02_metas_ahorro.sql
-
 psql -d calculadora_ahorro_programado -f sql/03_historial_calculos.sql
 ```
 
----
-
-# 3. Estructura de archivos en `sql/`
+**Estructura de archivos en la carpeta `sql/`**:
 
 | Script | Propósito |
-|---|---|
-| `borrar_tablas.sql` | Contiene los `DROP TABLE CASCADE`. Es utilizado automáticamente por el entorno de pruebas (**Test Fixtures**) para vaciar la base de datos antes de cada test, garantizando que las pruebas arranquen desde cero y evitando errores de llaves duplicadas. |
-| `usuarios.sql` | Crea la tabla principal de usuarios que utilizan la calculadora. |
-| `metas_ahorro.sql` | Crea la tabla `metas_ahorro`, que guarda cada simulación con sus parámetros financieros (`meta`, `plazo`, `extra`, `mes_extra`) y la cuota mensual resultante. Depende de la tabla `usuarios`. |
-| `historial_calculos.sql` | Crea la tabla `historial_calculos`, registrando el detalle completo de cada cálculo (incluyendo `factor_anualidad`) para fines de auditoría. Depende de la tabla `usuarios`. |
-| `inserts_ejemplo.sql` | Archivo opcional que inserta datos de prueba (ejemplo: Miguel Angel, Jose Angel) para verificar que la base de datos funciona correctamente sin necesidad de ingresar datos manualmente desde Python. |
+|--------|-----------|
+| `00_borrar_tablas.sql`| Contiene los `DROP TABLE CASCADE`. Es utilizado automáticamente por el entorno de pruebas (**Test Fixtures**) para vaciar la base de datos antes de cada test, garantizando que arranquen desde cero y evitando errores de llaves duplicadas. |
+| `01_usuarios.sql` | Crea la tabla principal de `usuarios` que utilizan la calculadora. |
+| `02_metas_ahorro.sql` | Crea la tabla `metas_ahorro`, que guarda cada simulación con sus parámetros financieros (meta, plazo, extra, mes_extra) y la cuota mensual resultante. Depende de la tabla usuarios. |
+| `03_historial_calculos.sql` | Crea la tabla `historial_calculos`, registrando el detalle completo de cada cálculo (incluyendo factor de anualidad) para auditoría. Depende de la tabla usuarios. |
+| `04_inserts_ejemplo.sql` | Archivo opcional que inserta datos de prueba (ej. Miguel Angel, Jose Angel) para verificar que la base de datos funciona correctamente sin tener que teclear desde Python. |
 
----
-
-# 4. Diagrama Entidad-Relación
+### 3. Diagrama Entidad-Relación
 
 ```text
 ┌─────────────┐       ┌──────────────────┐       ┌──────────────────────┐
