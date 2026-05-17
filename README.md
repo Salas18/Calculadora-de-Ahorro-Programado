@@ -274,7 +274,7 @@ python -m unittest -v tests.test_db
 **Descubrimiento Automático**  
 Si decides agregar más archivos de prueba en la carpeta `tests`, este comando encontrará y ejecutará todos automáticamente:
 ```powershell
-python -m unittest discover -s tests -p "test*.py"
+python -m unittest discover -s src/tests -p "test*.py"
 ```
 
 > **Nota Técnica:** Asegúrate de que tu entorno virtual (`.venv`) esté activado y que te encuentres en la raíz de la carpeta `Calculadora-de-Ahorro-Programado` para que las importaciones de `src` y `secret_config` funcionen correctamente. Si usas PowerShell y tienes problemas de importación, puedes usar: `$env:PYTHONPATH = "."; python -m unittest tests.test_db`
