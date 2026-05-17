@@ -143,27 +143,62 @@ psql -d calculadora_ahorro_programado -f sql/03_historial_calculos.sql
 El sistema sigue el principio de **separación de responsabilidades (SRP)**, dividiendo el proyecto en tres capas principales: Core/Model (Lógica), UI (Interfaz) y Tests (Pruebas).
 
 ```text
-CALCULADORA_AHORRO_PROGRAMADO/
-│
-├── src/
-│   ├── controller/
-│   │   ├── usuario_controller.py  # Persistencia de usuarios en BD
-│   │   └── ahorro_controller.py   # Guardado de metas en BD
-│   ├── model/
-│   │   ├── usuario.py             # Objeto Usuario
-│   │   └── ahorro.py              # Lógica financiera (Core)
-│   └── ui/
-│       ├── console.py             # Interfaz de comandos
-│       └── gui/                   # Interfaz gráfica (Kivy)
-│
-├── tests/
-│   ├── __init__.py                
-│   └── test_db.py                 # 9 Pruebas integrales requeridas
-│
-├── secret_config.py               # Credenciales (Ignorado en Git)
-└── README.md
-```
+## 🏗️ Arquitectura del Proyecto y Responsabilidades
 
+El sistema sigue el principio de **separación de responsabilidades (SRP)**, dividiendo el proyecto en capas bien definidas. A continuación, se presenta la estructura real del repositorio:
+
+```text
+CALCULADORA-DE-AHORRO-PROGRAMADO/
+│
+├── docs/                          # Documentación y archivos de apoyo
+│   └── Libro de excel (1).xlsx    # Prototipo y cálculos manuales
+│
+├── sql/                           # Scripts para inicializar y limpiar la base de datos
+│   ├── borrar_tablas.sql
+│   ├── historial_calculos.sql
+│   ├── inserts_ejemplo.sql
+│   ├── metas_ahorro.sql
+│   └── usuarios.sql
+│
+├── src/                           # Código fuente principal de la aplicación
+│   ├── controller/                # Capa de Control (Persistencia y BD)
+│   │   ├── __init__.py
+│   │   ├── ahorro_controller.py
+│   │   └── usuario_controller.py
+│   │
+│   ├── core/                      # Reglas de negocio puras
+│   │   ├── __init__.py
+│   │   └── logica.py
+│   │
+│   ├── model/                     # Definición de Objetos/Entidades
+│   │   ├── __init__.py
+│   │   ├── ahorro.py
+│   │   ├── historial_calculo.py
+│   │   ├── meta_ahorro.py
+│   │   └── usuario.py
+│   │
+│   └── view/                      # Capa de Presentación (UI/Consola)
+│       ├── __init__.py
+│       ├── console.py             # Script principal de consola
+│       ├── error.png              # Recursos gráficos
+│       ├── gui_calculadora.py     # Script principal de la interfaz Kivy
+│       └── view-console/          # Vistas individuales por consola
+│           ├── buscar_ahorro.py
+│           ├── crear_meta_ahorro.py
+│           ├── crear_usuario.py
+│           └── __init__.py
+│
+├── tests/                         # Entorno riguroso de pruebas unitarias
+│   ├── __init__.py
+│   ├── test_ahorro_programado.py
+│   └── test_db.py
+│
+├── .gitignore                     # Archivos ignorados por Git (ej. pycache, secretos)
+├── buildozer.spec                 # Configuración para compilar APK en Android
+├── calculadora_ahorro.spec        # Configuración de PyInstaller
+├── main.py                        # Punto de entrada de la aplicación
+├── README.md                      # Documentación del proyecto
+└── secret_config.py               # Credenciales de Render (NO SUBIR A GITHUB)
 ---
 
 ## 📥 Entradas del Sistema
