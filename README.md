@@ -30,62 +30,74 @@ $$C = \frac{(Meta - VF_{extra}) \times i}{(1 + i)^n - 1}$$
 Todos los valores monetarios de salida se redondean a **2 decimales** para garantizar precisión contable.
 
 ---
-
 ## 🗄️ Base de Datos y Persistencia (PostgreSQL)
 
 Para cumplir con la persistencia de datos solicitada en la rúbrica, el sistema se integra con una base de datos PostgreSQL alojada en **Render**. 
 
-### 1. Creación de Tablas (SQL)
-Ejecute el siguiente script en su gestor de base de datos para habilitar la estructura necesaria:
+### 1. Configuración de conexión
 
-```sql
--- Tabla de usuarios
-CREATE TABLE usuarios (
-    id_usuario SERIAL PRIMARY KEY,
-    nombre VARCHAR(100) NOT NULL,
-    email VARCHAR(150) UNIQUE NOT NULL
-);
-
--- Tabla de metas de ahorro
-CREATE TABLE metas_ahorro (
-    id_meta SERIAL PRIMARY KEY,
-    id_usuario INT REFERENCES usuarios(id_usuario) ON DELETE CASCADE,
-    meta DECIMAL(18,2) NOT NULL,
-    plazo INT NOT NULL,
-    extra DECIMAL(18,2) DEFAULT 0,
-    mes_extra INT DEFAULT 0,
-    cuota_mensual DECIMAL(18,2)
-);
-
--- Tabla de historial de cálculos
-CREATE TABLE historial_calculos (
-    id_historial SERIAL PRIMARY KEY,
-    id_usuario INT REFERENCES usuarios(id_usuario),
-    meta DECIMAL(18,2),
-    plazo INT,
-    extra DECIMAL(18,2),
-    mes_extra INT,
-    cuota_mensual DECIMAL(18,2),
-    fecha_calculo TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-);
-```
-
-### 2. Conexión Segura con `secret_config.py`
 El sistema utiliza un archivo de configuración externa para proteger las credenciales y cumplir con el requisito de no exponer datos privados:
-1. Cree un archivo llamado `secret_config.py` en la raíz del proyecto.
-2. Agregue este archivo a su `.gitignore`.
-3. Utilice la siguiente plantilla para establecer la conexión:
+1. Copia `secret_config_sample.py` a `secret_config.py`.
+2. Asegúrate de que `secret_config.py` esté incluido en tu `.gitignore`.
+3. Abre `secret_config.py` y escribe estos datos (reemplazando con tus credenciales reales):
 
 ```python
 # Instrucciones: Reemplace los valores con sus credenciales reales de Render
-PGDATABASE = "nombre_de_tu_db"
-PGUSER = "tu_usuario"
-PGPASSWORD = "tu_password_secreto"
-PGHOST = "tu_host_de_render"
+PGDATABASE = "calculadora_ahorro"
+PGUSER = "salas18"
+PGPASSWORD = "OyXLN6OLFMdldi0HA5GKwcA6GWeB7Mg0"
+PGHOST = "dpg-d7ln7667r5hc73c2j1pg-a.oregon-postgres.render.com"
 PGPORT = "5432"
 ```
 
----
+No necesitas usar comandos extra ni variables de entorno. Solo asegúrate de tener Python instalado.
+
+### 2. Crear las tablas
+
+Si la base de datos ya existe, puedes crear las tablas desde Python con este comando en la raíz del proyecto:
+
+```bash
+python -c "from src.controller.usuario_controller import UsuarioController; UsuarioController.crear_tablas()"
+```
+
+O bien, si prefieres usar los archivos SQL aplicando los principios de Código Limpio, abre la terminal en la carpeta del proyecto y ejecuta en este orden estricto:
+
+```bash
+psql -d calculadora_ahorro_programado -f sql/usuarios.sql
+psql -d calculadora_ahorro_programado -f sql/metas_ahorro.sql
+psql -d calculadora_ahorro_programado -f sql/historial_calculos.sql
+```
+
+**Estructura de archivos en la carpeta `sql/`**:
+
+| Script | Propósito |
+|--------|-----------|
+| `00_borrar_tablas.sql`| Contiene los `DROP TABLE CASCADE`. Es utilizado automáticamente por el entorno de pruebas (**Test Fixtures**) para vaciar la base de datos antes de cada test, garantizando que arranquen desde cero y evitando errores de llaves duplicadas. |
+| `01_usuarios.sql` | Crea la tabla principal de `usuarios` que utilizan la calculadora. |
+| `02_metas_ahorro.sql` | Crea la tabla `metas_ahorro`, que guarda cada simulación con sus parámetros financieros (meta, plazo, extra, mes_extra) y la cuota mensual resultante. Depende de la tabla usuarios. |
+| `03_historial_calculos.sql` | Crea la tabla `historial_calculos`, registrando el detalle completo de cada cálculo (incluyendo factor de anualidad) para auditoría. Depende de la tabla usuarios. |
+| `04_inserts_ejemplo.sql` | Archivo opcional que inserta datos de prueba (ej. Miguel Angel, Jose Angel) para verificar que la base de datos funciona correctamente sin tener que teclear desde Python. |
+
+### 3. Diagrama Entidad-Relación
+
+```text
+┌─────────────┐       ┌──────────────────┐       ┌──────────────────────┐
+│   usuarios  │       │   metas_ahorro   │       │ historial_calculos   │
+├─────────────┤       ├──────────────────┤       ├──────────────────────┤
+│ id_usuario  │──┐    │ id_meta          │       │ id_historial         │
+│ nombre      │  │    │ id_usuario (FK)  │◄──────┤ id_usuario (FK)      │
+│ email       │  └────┤ meta             │       │ meta                 │
+│ fecha_reg   │       │ plazo            │       │ plazo                │
+└─────────────┘       │ extra            │       │ extra                │
+                      │ mes_extra        │       │ mes_extra            │
+                      │ tasa             │       │ tasa                 │
+                      │ cuota_mensual    │       │ valor_futuro_extra   │
+                      │ fecha_calculo    │       │ factor_anualidad     │
+                      └──────────────────┘       │ cuota_mensual        │
+                                                 │ fecha_calculo        │
+                                                 └──────────────────────┘
+```
+
 
 ## 🔄 Flujo de Ejecución del Algoritmo
 
@@ -104,27 +116,62 @@ PGPORT = "5432"
 El sistema sigue el principio de **separación de responsabilidades (SRP)**, dividiendo el proyecto en tres capas principales: Core/Model (Lógica), UI (Interfaz) y Tests (Pruebas).
 
 ```text
-CALCULADORA_AHORRO_PROGRAMADO/
-│
-├── src/
-│   ├── controller/
-│   │   ├── usuario_controller.py  # Persistencia de usuarios en BD
-│   │   └── ahorro_controller.py   # Guardado de metas en BD
-│   ├── model/
-│   │   ├── usuario.py             # Objeto Usuario
-│   │   └── ahorro.py              # Lógica financiera (Core)
-│   └── ui/
-│       ├── console.py             # Interfaz de comandos
-│       └── gui/                   # Interfaz gráfica (Kivy)
-│
-├── tests/
-│   ├── __init__.py                
-│   └── test_db.py                 # 9 Pruebas integrales requeridas
-│
-├── secret_config.py               # Credenciales (Ignorado en Git)
-└── README.md
-```
+## 🏗️ Arquitectura del Proyecto y Responsabilidades
 
+El sistema sigue el principio de **separación de responsabilidades (SRP)**, dividiendo el proyecto en capas bien definidas. A continuación, se presenta la estructura real del repositorio:
+
+```text
+CALCULADORA-DE-AHORRO-PROGRAMADO/
+│
+├── docs/                          # Documentación y archivos de apoyo
+│   └── Libro de excel (1).xlsx    # Prototipo y cálculos manuales
+│
+├── sql/                           # Scripts para inicializar y limpiar la base de datos
+│   ├── borrar_tablas.sql
+│   ├── historial_calculos.sql
+│   ├── inserts_ejemplo.sql
+│   ├── metas_ahorro.sql
+│   └── usuarios.sql
+│
+├── src/                           # Código fuente principal de la aplicación
+│   ├── controller/                # Capa de Control (Persistencia y BD)
+│   │   ├── __init__.py
+│   │   ├── ahorro_controller.py
+│   │   └── usuario_controller.py
+│   │
+│   ├── core/                      # Reglas de negocio puras
+│   │   ├── __init__.py
+│   │   └── logica.py
+│   │
+│   ├── model/                     # Definición de Objetos/Entidades
+│   │   ├── __init__.py
+│   │   ├── ahorro.py
+│   │   ├── historial_calculo.py
+│   │   ├── meta_ahorro.py
+│   │   └── usuario.py
+│   │
+│   └── view/                      # Capa de Presentación (UI/Consola)
+│       ├── __init__.py
+│       ├── console.py             # Script principal de consola
+│       ├── error.png              # Recursos gráficos
+│       ├── gui_calculadora.py     # Script principal de la interfaz Kivy
+│       └── view-console/          # Vistas individuales por consola
+│           ├── buscar_ahorro.py
+│           ├── crear_meta_ahorro.py
+│           ├── crear_usuario.py
+│           └── __init__.py
+│
+├── tests/                         # Entorno riguroso de pruebas unitarias
+│   ├── __init__.py
+│   ├── test_ahorro_programado.py
+│   └── test_db.py
+│
+├── .gitignore                     # Archivos ignorados por Git (ej. pycache, secretos)
+├── buildozer.spec                 # Configuración para compilar APK en Android
+├── calculadora_ahorro.spec        # Configuración de PyInstaller
+├── main.py                        # Punto de entrada de la aplicación
+├── README.md                      # Documentación del proyecto
+└── secret_config.py               # Credenciales de Render (NO SUBIR A GITHUB)
 ---
 
 ## 📥 Entradas del Sistema
@@ -167,7 +214,7 @@ pip install kivy psycopg2
 El GUI está construido con Kivy. Para ejecutarlo, corre el siguiente comando **desde la raíz del proyecto**:
 
 ```bash
-python src/ui/gui/gui_calculadora.py
+python src/view/gui_calculadora.py
 ```
 
 Una vez abierta la aplicación, encontrarás los campos necesarios para ingresar tu meta de ahorro. Al presionar **"Calcular Ahorro"**, la aplicación mostrará el monto que debes ahorrar cada mes y gestionará el guardado en la base de datos.
@@ -176,7 +223,7 @@ Una vez abierta la aplicación, encontrarás los campos necesarios para ingresar
 Si prefieres usar la versión de línea de comandos, ejecuta:
 
 ```bash
-python src/ui/console.py
+python src/view/console.py
 ```
 
 El programa te pedirá los mismos datos de forma interactiva.
@@ -200,7 +247,7 @@ python -m unittest -v tests.test_db
 **Descubrimiento Automático**  
 Si decides agregar más archivos de prueba en la carpeta `tests`, este comando encontrará y ejecutará todos automáticamente:
 ```powershell
-python -m unittest discover -s tests -p "test*.py"
+python -m unittest discover -s src/tests -p "test*.py"
 ```
 
 > **Nota Técnica:** Asegúrate de que tu entorno virtual (`.venv`) esté activado y que te encuentres en la raíz de la carpeta `Calculadora-de-Ahorro-Programado` para que las importaciones de `src` y `secret_config` funcionen correctamente. Si usas PowerShell y tienes problemas de importación, puedes usar: `$env:PYTHONPATH = "."; python -m unittest tests.test_db`
