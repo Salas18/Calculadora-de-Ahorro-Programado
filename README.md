@@ -30,62 +30,101 @@ $$C = \frac{(Meta - VF_{extra}) \times i}{(1 + i)^n - 1}$$
 Todos los valores monetarios de salida se redondean a **2 decimales** para garantizar precisión contable.
 
 ---
+# 🗄️ Base de Datos y Persistencia (PostgreSQL)
 
-## 🗄️ Base de Datos y Persistencia (PostgreSQL)
+Para cumplir con la persistencia de datos solicitada en la rúbrica, el sistema se integra con una base de datos PostgreSQL alojada en **Render**.
 
-Para cumplir con la persistencia de datos solicitada en la rúbrica, el sistema se integra con una base de datos PostgreSQL alojada en **Render**. 
+---
 
-### 1. Creación de Tablas (SQL)
-Ejecute el siguiente script en su gestor de base de datos para habilitar la estructura necesaria:
+# 1. Configuración de conexión
 
-```sql
--- Tabla de usuarios
-CREATE TABLE usuarios (
-    id_usuario SERIAL PRIMARY KEY,
-    nombre VARCHAR(100) NOT NULL,
-    email VARCHAR(150) UNIQUE NOT NULL
-);
+El sistema utiliza un archivo de configuración externa para proteger las credenciales y cumplir con el requisito de no exponer datos privados.
 
--- Tabla de metas de ahorro
-CREATE TABLE metas_ahorro (
-    id_meta SERIAL PRIMARY KEY,
-    id_usuario INT REFERENCES usuarios(id_usuario) ON DELETE CASCADE,
-    meta DECIMAL(18,2) NOT NULL,
-    plazo INT NOT NULL,
-    extra DECIMAL(18,2) DEFAULT 0,
-    mes_extra INT DEFAULT 0,
-    cuota_mensual DECIMAL(18,2)
-);
+## Pasos
 
--- Tabla de historial de cálculos
-CREATE TABLE historial_calculos (
-    id_historial SERIAL PRIMARY KEY,
-    id_usuario INT REFERENCES usuarios(id_usuario),
-    meta DECIMAL(18,2),
-    plazo INT,
-    extra DECIMAL(18,2),
-    mes_extra INT,
-    cuota_mensual DECIMAL(18,2),
-    fecha_calculo TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-);
+1. Copia el archivo:
+
+```bash
+secret_config_sample.py
 ```
 
-### 2. Conexión Segura con `secret_config.py`
-El sistema utiliza un archivo de configuración externa para proteger las credenciales y cumplir con el requisito de no exponer datos privados:
-1. Cree un archivo llamado `secret_config.py` en la raíz del proyecto.
-2. Agregue este archivo a su `.gitignore`.
-3. Utilice la siguiente plantilla para establecer la conexión:
+a:
+
+```bash
+secret_config.py
+```
+
+2. Asegúrate de incluir `secret_config.py` en tu archivo `.gitignore`.
+
+3. Abre `secret_config.py` y escribe las credenciales reales de PostgreSQL:
 
 ```python
-# Instrucciones: Reemplace los valores con sus credenciales reales de Render
+# Instrucciones:
+# Reemplace los valores con sus credenciales reales de Render
+
 PGDATABASE = "nombre_de_tu_db"
 PGUSER = "tu_usuario"
 PGPASSWORD = "tu_password_secreto"
-PGHOST = "tu_host_de_render"
+PGHOST = "dpg-d7ln7667r5hc73c2j1pg-a.oregon-postgres.render.com"
 PGPORT = "5432"
 ```
 
+> No necesitas usar comandos adicionales ni variables de entorno.  
+> Solo asegúrate de tener Python instalado correctamente.
+
 ---
+
+# 2. Scripts SQL (Carpeta `sql/`)
+
+Aplicando principios de **Código Limpio**, las sentencias SQL no están quemadas dentro del código Python.  
+En su lugar, todos los scripts fueron separados en la carpeta `sql/`.
+
+## Orden de ejecución
+
+Ejecuta los scripts en este orden estricto:
+
+```bash
+psql -d calculadora_ahorro_programado -f sql/01_usuarios.sql
+
+psql -d calculadora_ahorro_programado -f sql/02_metas_ahorro.sql
+
+psql -d calculadora_ahorro_programado -f sql/03_historial_calculos.sql
+```
+
+---
+
+# 3. Estructura de archivos en `sql/`
+
+| Script | Propósito |
+|---|---|
+| `00_borrar_tablas.sql` | Contiene los `DROP TABLE CASCADE`. Es utilizado automáticamente por el entorno de pruebas (**Test Fixtures**) para vaciar la base de datos antes de cada test, garantizando que las pruebas arranquen desde cero y evitando errores de llaves duplicadas. |
+| `01_usuarios.sql` | Crea la tabla principal de usuarios que utilizan la calculadora. |
+| `02_metas_ahorro.sql` | Crea la tabla `metas_ahorro`, que guarda cada simulación con sus parámetros financieros (`meta`, `plazo`, `extra`, `mes_extra`) y la cuota mensual resultante. Depende de la tabla `usuarios`. |
+| `03_historial_calculos.sql` | Crea la tabla `historial_calculos`, registrando el detalle completo de cada cálculo (incluyendo `factor_anualidad`) para fines de auditoría. Depende de la tabla `usuarios`. |
+| `04_inserts_ejemplo.sql` | Archivo opcional que inserta datos de prueba (ejemplo: Miguel Angel, Jose Angel) para verificar que la base de datos funciona correctamente sin necesidad de ingresar datos manualmente desde Python. |
+
+---
+
+# 4. Diagrama Entidad-Relación
+
+```text
+┌─────────────┐       ┌──────────────────┐       ┌──────────────────────┐
+│   usuarios  │       │   metas_ahorro   │       │ historial_calculos   │
+├─────────────┤       ├──────────────────┤       ├──────────────────────┤
+│ id_usuario  │──┐    │ id_meta          │       │ id_historial         │
+│ nombre      │  │    │ id_usuario (FK)  │◄──────┤ id_usuario (FK)      │
+│ email       │  └────┤ meta             │       │ meta                 │
+│ fecha_reg   │       │ plazo            │       │ plazo                │
+└─────────────┘       │ extra            │       │ extra                │
+                      │ mes_extra        │       │ mes_extra            │
+                      │ tasa             │       │ tasa                 │
+                      │ cuota_mensual    │       │ valor_futuro_extra   │
+                      │ fecha_calculo    │       │ factor_anualidad     │
+                      └──────────────────┘       │ cuota_mensual        │
+                                                 │ fecha_calculo        │
+                                                 └──────────────────────┘
+```
+
 
 ## 🔄 Flujo de Ejecución del Algoritmo
 
