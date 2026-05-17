@@ -97,11 +97,11 @@ psql -d calculadora_ahorro_programado -f sql/03_historial_calculos.sql
 
 | Script | Propósito |
 |---|---|
-| `00_borrar_tablas.sql` | Contiene los `DROP TABLE CASCADE`. Es utilizado automáticamente por el entorno de pruebas (**Test Fixtures**) para vaciar la base de datos antes de cada test, garantizando que las pruebas arranquen desde cero y evitando errores de llaves duplicadas. |
-| `01_usuarios.sql` | Crea la tabla principal de usuarios que utilizan la calculadora. |
-| `02_metas_ahorro.sql` | Crea la tabla `metas_ahorro`, que guarda cada simulación con sus parámetros financieros (`meta`, `plazo`, `extra`, `mes_extra`) y la cuota mensual resultante. Depende de la tabla `usuarios`. |
-| `03_historial_calculos.sql` | Crea la tabla `historial_calculos`, registrando el detalle completo de cada cálculo (incluyendo `factor_anualidad`) para fines de auditoría. Depende de la tabla `usuarios`. |
-| `04_inserts_ejemplo.sql` | Archivo opcional que inserta datos de prueba (ejemplo: Miguel Angel, Jose Angel) para verificar que la base de datos funciona correctamente sin necesidad de ingresar datos manualmente desde Python. |
+| `borrar_tablas.sql` | Contiene los `DROP TABLE CASCADE`. Es utilizado automáticamente por el entorno de pruebas (**Test Fixtures**) para vaciar la base de datos antes de cada test, garantizando que las pruebas arranquen desde cero y evitando errores de llaves duplicadas. |
+| `usuarios.sql` | Crea la tabla principal de usuarios que utilizan la calculadora. |
+| `metas_ahorro.sql` | Crea la tabla `metas_ahorro`, que guarda cada simulación con sus parámetros financieros (`meta`, `plazo`, `extra`, `mes_extra`) y la cuota mensual resultante. Depende de la tabla `usuarios`. |
+| `historial_calculos.sql` | Crea la tabla `historial_calculos`, registrando el detalle completo de cada cálculo (incluyendo `factor_anualidad`) para fines de auditoría. Depende de la tabla `usuarios`. |
+| `inserts_ejemplo.sql` | Archivo opcional que inserta datos de prueba (ejemplo: Miguel Angel, Jose Angel) para verificar que la base de datos funciona correctamente sin necesidad de ingresar datos manualmente desde Python. |
 
 ---
 
@@ -241,7 +241,7 @@ pip install kivy psycopg2
 El GUI está construido con Kivy. Para ejecutarlo, corre el siguiente comando **desde la raíz del proyecto**:
 
 ```bash
-python src/ui/gui/gui_calculadora.py
+python src/view/gui_calculadora.py
 ```
 
 Una vez abierta la aplicación, encontrarás los campos necesarios para ingresar tu meta de ahorro. Al presionar **"Calcular Ahorro"**, la aplicación mostrará el monto que debes ahorrar cada mes y gestionará el guardado en la base de datos.
@@ -250,7 +250,7 @@ Una vez abierta la aplicación, encontrarás los campos necesarios para ingresar
 Si prefieres usar la versión de línea de comandos, ejecuta:
 
 ```bash
-python src/ui/console.py
+python src/view/console.py
 ```
 
 El programa te pedirá los mismos datos de forma interactiva.
