@@ -63,9 +63,9 @@ python -c "from src.controller.usuario_controller import UsuarioController; Usua
 O bien, si prefieres usar los archivos SQL aplicando los principios de Código Limpio, abre la terminal en la carpeta del proyecto y ejecuta en este orden estricto:
 
 ```bash
-psql -d calculadora_ahorro_programado -f sql/01_usuarios.sql
-psql -d calculadora_ahorro_programado -f sql/02_metas_ahorro.sql
-psql -d calculadora_ahorro_programado -f sql/03_historial_calculos.sql
+psql -d calculadora_ahorro_programado -f sql/usuarios.sql
+psql -d calculadora_ahorro_programado -f sql/metas_ahorro.sql
+psql -d calculadora_ahorro_programado -f sql/historial_calculos.sql
 ```
 
 **Estructura de archivos en la carpeta `sql/`**:
