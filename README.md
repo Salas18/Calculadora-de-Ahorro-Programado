@@ -67,6 +67,14 @@ psql -d calculadora_ahorro_programado -f sql/usuarios.sql
 psql -d calculadora_ahorro_programado -f sql/metas_ahorro.sql
 psql -d calculadora_ahorro_programado -f sql/historial_calculos.sql
 ```
+Para buscar datos
+```bash
+python src/view-console/buscar_ahorro.py
+```
+si sale algun problema ejecutar este 
+```bash
+python poblar_db.py
+```
 
 **Estructura de archivos en la carpeta `sql/`**:
 
