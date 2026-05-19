@@ -6,13 +6,13 @@ Su función principal es calcular la cuota mensual requerida para cumplir un obj
 
 ---
 
-## 🚀 Propósito del Proyecto
+##  Propósito del Proyecto
 
 El objetivo central es automatizar el cálculo de la **cuota mensual fija** que un usuario debe depositar para alcanzar una meta económica. Para esto, el algoritmo se apoya en el modelo matemático de **anualidades de valor futuro con interés compuesto**, evaluando cómo un aporte extraordinario disminuye la carga mensual del ahorrador.
 
 ---
 
-## 📊 Bases Matemáticas y Fórmulas
+##  Bases Matemáticas y Fórmulas
 
 El motor de cálculo financiero del programa se rige por las siguientes premisas:
 
@@ -30,7 +30,7 @@ $$C = \frac{(Meta - VF_{extra}) \times i}{(1 + i)^n - 1}$$
 Todos los valores monetarios de salida se redondean a **2 decimales** para garantizar precisión contable.
 
 ---
-## 🗄️ Base de Datos y Persistencia (PostgreSQL)
+##  Base de Datos y Persistencia (PostgreSQL)
 
 Para cumplir con la persistencia de datos solicitada en la rúbrica, el sistema se integra con una base de datos PostgreSQL alojada en **Render**. 
 
@@ -115,7 +115,7 @@ python src/view-console/crear_usuario.py
 ```
 
 
-## 🔄 Flujo de Ejecución del Algoritmo
+##  Flujo de Ejecución del Algoritmo
 
 1. Recepción de los parámetros de configuración del ahorro por parte del usuario.
 2. Filtro de seguridad (evaluación estricta de las reglas de negocio y validación de datos).
