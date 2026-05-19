@@ -16,15 +16,15 @@ El objetivo central es automatizar el cálculo de la **cuota mensual fija** que 
 
 El motor de cálculo financiero del programa se rige por las siguientes premisas:
 
-- 📌 **Tasa de rendimiento mensual ($i$):** Fijada en `0.75%` (0.0075) para las proyecciones.
+-  **Tasa de rendimiento mensual ($i$):** Fijada en `0.75%` (0.0075) para las proyecciones.
 
-- 📌 **Valor Futuro del Abono Extra:** Este aporte ($Extra$) genera rendimientos desde el mes en que se deposita ($k$) hasta el vencimiento del plan ($n$). 
+-  **Valor Futuro del Abono Extra:** Este aporte ($Extra$) genera rendimientos desde el mes en que se deposita ($k$) hasta el vencimiento del plan ($n$). 
 $$VF_{extra} = Extra \times (1 + i)^{(n - k)}$$
 
-- 📌 **Valor Futuro de Anualidad Ordinaria:** Calcula cómo el dinero aportado mes a mes ($C$) va sumando valor con los intereses para alcanzar una Meta ($VF$).
+-  **Valor Futuro de Anualidad Ordinaria:** Calcula cómo el dinero aportado mes a mes ($C$) va sumando valor con los intereses para alcanzar una Meta ($VF$).
 $$VF = C \times \frac{(1 + i)^n - 1}{i}$$
 
-- 📌 **Cálculo de la Cuota Mensual ($C$):** Al total de la meta original se le descuenta el valor futuro generado por el abono extra. Sobre ese nuevo total, se despeja $C$ para hallar el pago exacto:
+-  **Cálculo de la Cuota Mensual ($C$):** Al total de la meta original se le descuenta el valor futuro generado por el abono extra. Sobre ese nuevo total, se despeja $C$ para hallar el pago exacto:
 $$C = \frac{(Meta - VF_{extra}) \times i}{(1 + i)^n - 1}$$
 
 Todos los valores monetarios de salida se redondean a **2 decimales** para garantizar precisión contable.
