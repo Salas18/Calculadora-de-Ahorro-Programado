@@ -17,7 +17,8 @@ class UsuarioController:
         ruta_sql = os.path.abspath(os.path.join(os.path.dirname(__file__), '../../sql'))
         
        
-        archivos = ['01_usuarios.sql', '02_metas_ahorro.sql', '03_historial_calculos.sql']
+        
+        archivos = ['usuarios.sql', 'metas_ahorro.sql', 'historial_calculos.sql', 'inserts_ejemplo.sql']
         
         try:
             connection = psycopg2.connect(

@@ -16,11 +16,11 @@ class AhorroController:
         cuota = AhorroProgramado().calcular_ahorro(ahorro)
 
         connection = psycopg2.connect(
-            host=secret_config.PGHOST,
-            database=secret_config.PGDATABASE,
-            user=secret_config.PGUSER,
-            password=secret_config.PGPASSWORD,
-            port=secret_config.PGPORT
+            host=secret_config.PG_HOST,
+            database=secret_config.PG_DATABASE,
+            user=secret_config.PG_USER,
+            password=secret_config.PG_PASSWORD,
+            port=secret_config.PG_PORT
         )
         cursor = connection.cursor()
         cursor.execute(
@@ -35,11 +35,11 @@ class AhorroController:
 
     def buscar_meta(id_meta: int) -> MetaAhorro | None:
         connection = psycopg2.connect(
-            host=secret_config.PGHOST,
-            database=secret_config.PGDATABASE,
-            user=secret_config.PGUSER,
-            password=secret_config.PGPASSWORD,
-            port=secret_config.PGPORT
+            host=secret_config.PG_HOST,
+            database=secret_config.PG_DATABASE,
+            user=secret_config.PG_USER,
+            password=secret_config.PG_PASSWORD,
+            port=secret_config.PG_PORT
         )
         cursor = connection.cursor()
         cursor.execute(
@@ -57,11 +57,11 @@ class AhorroController:
 
     def buscar_historial(id_historial: int) -> HistorialCalculo | None:
         connection = psycopg2.connect(
-            host=secret_config.PGHOST,
-            database=secret_config.PGDATABASE,
-            user=secret_config.PGUSER,
-            password=secret_config.PGPASSWORD,
-            port=secret_config.PGPORT
+            host=secret_config.PG_HOST,
+            database=secret_config.PG_DATABASE,
+            user=secret_config.PG_USER,
+            password=secret_config.PG_PASSWORD,
+            port=secret_config.PG_PORT
         )
         cursor = connection.cursor()
         cursor.execute(
@@ -77,3 +77,38 @@ class AhorroController:
             plazo=row[3], extra=row[4], mes_extra=row[5],
             cuota_mensual=row[6]
         )
+    
+    @classmethod
+    def insertar_ahorro(cls, ahorro):
+        try:
+            import psycopg2
+            import secret_config
+            
+            connection = psycopg2.connect(
+                host=secret_config.PG_HOST,
+                database=secret_config.PG_DATABASE,
+                user=secret_config.PG_USER,
+                password=secret_config.PG_PASSWORD,
+                port=secret_config.PG_PORT
+            )
+            cursor = connection.cursor()
+            
+            
+            cursor.execute("""
+                INSERT INTO metas_ahorro (id_usuario, meta, plazo, extra, mes_extra, cuota_mensual) 
+                VALUES (%s, %s, %s, %s, %s, %s)
+            """, (
+                ahorro.id_usuario, 
+                ahorro.meta, 
+                ahorro.plazo, 
+                ahorro.extra, 
+                ahorro.mes_extra,
+                getattr(ahorro, 'cuota_mensual', 0.0)  
+            ))
+            
+            connection.commit() 
+            connection.close()
+            
+        except Exception as e:
+            raise Exception(f"Error en la base de datos al insertar: {e}")
+    
