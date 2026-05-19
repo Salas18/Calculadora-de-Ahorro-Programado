@@ -127,12 +127,12 @@ python src/view-console/crear_usuario.py
 
 ---
 
-## 🏗️ Arquitectura del Proyecto y Responsabilidades
+## Arquitectura del Proyecto y Responsabilidades
 
 El sistema sigue el principio de **separación de responsabilidades (SRP)**, dividiendo el proyecto en tres capas principales: Core/Model (Lógica), UI (Interfaz) y Tests (Pruebas).
 
 ```text
-## 🏗️ Arquitectura del Proyecto y Responsabilidades
+## Arquitectura del Proyecto y Responsabilidades
 
 El sistema sigue el principio de **separación de responsabilidades (SRP)**, dividiendo el proyecto en capas bien definidas. A continuación, se presenta la estructura real del repositorio:
 
@@ -190,7 +190,7 @@ CALCULADORA-DE-AHORRO-PROGRAMADO/
 └── secret_config.py               # Credenciales de Render (NO SUBIR A GITHUB)
 ---
 
-## 📥 Entradas del Sistema
+## Entradas del Sistema
 
 El programa solicita y procesa cuatro variables clave:
 
@@ -203,7 +203,7 @@ El programa solicita y procesa cuatro variables clave:
 
 ---
 
-## 🛡️ Reglas de Negocio y Validaciones
+## Reglas de Negocio y Validaciones
 
 El programa evalúa de forma estricta que:
 
@@ -217,7 +217,7 @@ Si alguna condición falla, el sistema lanza **excepciones personalizadas** (Ej:
 
 ---
 
-## ▶️ Ejecución de la Aplicación
+## Ejecución de la Aplicación
 
 ### Prerrequisitos
 Asegúrate de tener Python 3.x instalado. Para la interfaz gráfica y la base de datos, instala las dependencias:
@@ -246,7 +246,7 @@ El programa te pedirá los mismos datos de forma interactiva.
 
 ---
 
-## 🧪 Ejecución de Pruebas Unitarias
+##  Ejecución de Pruebas Unitarias
 
 **Ejecución Estándar**  
 Este comando ejecuta las 9 pruebas (3 de insertar, 3 de buscar y 3 de modificar) de forma silenciosa, mostrándote los puntos de éxito:
@@ -270,19 +270,19 @@ python -m unittest discover -s src/tests -p "test*.py"
 
 ---
 
-## 🧼 Principios de Código Limpio Aplicados
+##  Principios de Código Limpio Aplicados
 
-- ✔️ Programación Orientada a Objetos (POO) y Arquitectura MVC.
-- ✔️ Separación de responsabilidades.
-- ✔️ Validaciones robustas y tipado estricto (Type Hints).
-- ✔️ Excepciones personalizadas con contexto.
-- ✔️ Eliminación de "Números Mágicos" usando constantes.
-- ✔️ Protección de credenciales usando `secret_config.py` y `.gitignore`.
-- ✔️ Fixtures en pruebas (`setUp`) para limpieza automática de datos.
+-  Programación Orientada a Objetos (POO) y Arquitectura MVC.
+-  Separación de responsabilidades.
+-  Validaciones robustas y tipado estricto (Type Hints).
+-  Excepciones personalizadas con contexto.
+-  Eliminación de "Números Mágicos" usando constantes.
+-  Protección de credenciales usando `secret_config.py` y `.gitignore`.
+-  Fixtures en pruebas (`setUp`) para limpieza automática de datos.
 
 ---
 
-## 👨‍💻 Autores
+##  Autores
 
 **Equipo de Desarrollo:**
 - **Jose Angel Martinez**
