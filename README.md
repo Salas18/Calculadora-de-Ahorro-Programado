@@ -75,6 +75,14 @@ si sale algun problema ejecutar este
 ```bash
 python poblar_db.py
 ```
+Para insertar usuarios
+```bash
+python src/view-console/crear_meta_ahorro.py
+```
+Crear un usario
+```bash
+python src/view-console/crear_usuario.py
+```
 
 **Estructura de archivos en la carpeta `sql/`**:
 
