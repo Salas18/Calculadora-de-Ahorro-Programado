@@ -4,51 +4,144 @@ Herramienta financiera construida para la asignatura **Lenguajes de Programació
 
 Su función principal es calcular la cuota mensual requerida para cumplir un objetivo de ahorro en un tiempo definido, tomando en cuenta el rendimiento de una tasa de interés mensual y el impacto de inyecciones de capital (abonos extra).
 
+🌐 **Aplicación web desplegada:** [https://calculadora-de-ahorro-programado.onrender.com](https://calculadora-de-ahorro-programado.onrender.com)
+
 ---
 
-##  Propósito del Proyecto
+## Propósito del Proyecto
 
 El objetivo central es automatizar el cálculo de la **cuota mensual fija** que un usuario debe depositar para alcanzar una meta económica. Para esto, el algoritmo se apoya en el modelo matemático de **anualidades de valor futuro con interés compuesto**, evaluando cómo un aporte extraordinario disminuye la carga mensual del ahorrador.
 
 ---
 
-##  Bases Matemáticas y Fórmulas
+## Bases Matemáticas y Fórmulas
 
 El motor de cálculo financiero del programa se rige por las siguientes premisas:
 
--  **Tasa de rendimiento mensual ($i$):** Fijada en `0.75%` (0.0075) para las proyecciones.
+- **Tasa de rendimiento mensual ($i$):** Fijada en `0.75%` (0.0075) para las proyecciones.
 
--  **Valor Futuro del Abono Extra:** Este aporte ($Extra$) genera rendimientos desde el mes en que se deposita ($k$) hasta el vencimiento del plan ($n$). 
+- **Valor Futuro del Abono Extra:** Este aporte ($Extra$) genera rendimientos desde el mes en que se deposita ($k$) hasta el vencimiento del plan ($n$).
 $$VF_{extra} = Extra \times (1 + i)^{(n - k)}$$
 
--  **Valor Futuro de Anualidad Ordinaria:** Calcula cómo el dinero aportado mes a mes ($C$) va sumando valor con los intereses para alcanzar una Meta ($VF$).
+- **Valor Futuro de Anualidad Ordinaria:** Calcula cómo el dinero aportado mes a mes ($C$) va sumando valor con los intereses para alcanzar una Meta ($VF$).
 $$VF = C \times \frac{(1 + i)^n - 1}{i}$$
 
--  **Cálculo de la Cuota Mensual ($C$):** Al total de la meta original se le descuenta el valor futuro generado por el abono extra. Sobre ese nuevo total, se despeja $C$ para hallar el pago exacto:
+- **Cálculo de la Cuota Mensual ($C$):** Al total de la meta original se le descuenta el valor futuro generado por el abono extra. Sobre ese nuevo total, se despeja $C$ para hallar el pago exacto:
 $$C = \frac{(Meta - VF_{extra}) \times i}{(1 + i)^n - 1}$$
 
 Todos los valores monetarios de salida se redondean a **2 decimales** para garantizar precisión contable.
 
 ---
-##  Base de Datos y Persistencia (PostgreSQL)
 
-Para cumplir con la persistencia de datos solicitada en la rúbrica, el sistema se integra con una base de datos PostgreSQL alojada en **Render**. 
+## 🚀 Ejecución Local (desde cero)
+
+Sigue estos pasos para correr el proyecto en tu máquina con una base de datos en blanco.
+
+### 1. Prerrequisitos
+
+- Python 3.x instalado
+- PostgreSQL instalado y corriendo localmente
+- Git instalado
+
+### 2. Clonar el repositorio
+
+```bash
+git clone https://github.com/Salas18/Calculadora-de-Ahorro-Programado.git
+cd Calculadora-de-Ahorro-Programado
+```
+
+### 3. Instalar dependencias
+
+```bash
+pip install -r requirements.txt
+```
+
+O si usas la interfaz gráfica (Kivy):
+
+```bash
+pip install kivy psycopg2
+```
+
+### 4. Crear la base de datos local en PostgreSQL
+
+Abre tu cliente de PostgreSQL (psql o pgAdmin) y crea una base de datos vacía:
+
+```sql
+CREATE DATABASE calculadora_ahorro;
+```
+
+### 5. Configurar las credenciales
+
+Copia el archivo de ejemplo de configuración:
+
+```bash
+cp secret_config_sample.py secret_config.py
+```
+
+Abre `secret_config.py` y reemplaza con tus credenciales locales:
+
+```python
+PGDATABASE = "calculadora_ahorro"
+PGUSER = "tu_usuario_postgres"
+PGPASSWORD = "tu_contraseña"
+PGHOST = "localhost"
+PGPORT = "5432"
+```
+
+> ⚠️ Asegúrate de que `secret_config.py` esté en tu `.gitignore` para no subir credenciales al repositorio.
+
+### 6. Crear las tablas
+
+Ejecuta este comando desde la raíz del proyecto para crear todas las tablas automáticamente:
+
+```bash
+python -c "from src.controller.usuario_controller import UsuarioController; UsuarioController.crear_tablas()"
+```
+
+O si prefieres aplicar los scripts SQL manualmente en orden estricto:
+
+```bash
+psql -d calculadora_ahorro -f sql/usuarios.sql
+psql -d calculadora_ahorro -f sql/metas_ahorro.sql
+psql -d calculadora_ahorro -f sql/historial_calculos.sql
+```
+
+### 7. (Opcional) Poblar la base de datos con datos de prueba
+
+```bash
+python poblar_db.py
+```
+
+### 8. Ejecutar la aplicación
+
+**Interfaz web (Flask):**
+```bash
+python app.py
+```
+Luego abre tu navegador en `http://localhost:5000`
+
+**Interfaz gráfica (Kivy):**
+```bash
+python src/view/gui_calculadora.py
+```
+
+**Consola:**
+```bash
+python src/view/console.py
+```
+
+---
+
+## Base de Datos y Persistencia (PostgreSQL)
+
+Para cumplir con la persistencia de datos solicitada en la rúbrica, el sistema se integra con una base de datos PostgreSQL alojada en **Render**.
 
 ### 1. Configuración de conexión
 
 El sistema utiliza un archivo de configuración externa para proteger las credenciales y cumplir con el requisito de no exponer datos privados:
 1. Copia `secret_config_sample.py` a `secret_config.py`.
 2. Asegúrate de que `secret_config.py` esté incluido en tu `.gitignore`.
-3. Abre `secret_config.py` y escribe estos datos (reemplazando con tus credenciales reales):
-
-```python
-# Instrucciones: Reemplace los valores con sus credenciales reales de Render
-PGDATABASE = "calculadora_ahorro"
-PGUSER = "salas18"
-PGPASSWORD = "OyXLN6OLFMdldi0HA5GKwcA6GWeB7Mg0"
-PGHOST = "dpg-d7ln7667r5hc73c2j1pg-a.oregon-postgres.render.com"
-PGPORT = "5432"
-```
+3. Abre `secret_config.py` y escribe tus credenciales reales.
 
 No necesitas usar comandos extra ni variables de entorno. Solo asegúrate de tener Python instalado.
 
@@ -67,32 +160,26 @@ psql -d calculadora_ahorro_programado -f sql/usuarios.sql
 psql -d calculadora_ahorro_programado -f sql/metas_ahorro.sql
 psql -d calculadora_ahorro_programado -f sql/historial_calculos.sql
 ```
-Para buscar datos
+
+Para buscar datos:
 ```bash
 python src/view-console/buscar_ahorro.py
 ```
-si sale algun problema ejecutar este 
+
+Si sale algún problema ejecutar:
 ```bash
 python poblar_db.py
 ```
-Para insertar usuarios
+
+Para insertar usuarios:
 ```bash
 python src/view-console/crear_meta_ahorro.py
 ```
-Crear un usario
+
+Crear un usuario:
 ```bash
 python src/view-console/crear_usuario.py
 ```
-
-**Estructura de archivos en la carpeta `sql/`**:
-
-| Script | Propósito |
-|--------|-----------|
-| `00_borrar_tablas.sql`| Contiene los `DROP TABLE CASCADE`. Es utilizado automáticamente por el entorno de pruebas (**Test Fixtures**) para vaciar la base de datos antes de cada test, garantizando que arranquen desde cero y evitando errores de llaves duplicadas. |
-| `01_usuarios.sql` | Crea la tabla principal de `usuarios` que utilizan la calculadora. |
-| `02_metas_ahorro.sql` | Crea la tabla `metas_ahorro`, que guarda cada simulación con sus parámetros financieros (meta, plazo, extra, mes_extra) y la cuota mensual resultante. Depende de la tabla usuarios. |
-| `03_historial_calculos.sql` | Crea la tabla `historial_calculos`, registrando el detalle completo de cada cálculo (incluyendo factor de anualidad) para auditoría. Depende de la tabla usuarios. |
-| `04_inserts_ejemplo.sql` | Archivo opcional que inserta datos de prueba (ej. Miguel Angel, Jose Angel) para verificar que la base de datos funciona correctamente sin tener que teclear desde Python. |
 
 ### 3. Diagrama Entidad-Relación
 
@@ -114,8 +201,9 @@ python src/view-console/crear_usuario.py
                                                  └──────────────────────┘
 ```
 
+---
 
-##  Flujo de Ejecución del Algoritmo
+## Flujo de Ejecución del Algoritmo
 
 1. Recepción de los parámetros de configuración del ahorro por parte del usuario.
 2. Filtro de seguridad (evaluación estricta de las reglas de negocio y validación de datos).
@@ -130,11 +218,6 @@ python src/view-console/crear_usuario.py
 ## Arquitectura del Proyecto y Responsabilidades
 
 El sistema sigue el principio de **separación de responsabilidades (SRP)**, dividiendo el proyecto en tres capas principales: Core/Model (Lógica), UI (Interfaz) y Tests (Pruebas).
-
-```text
-## Arquitectura del Proyecto y Responsabilidades
-
-El sistema sigue el principio de **separación de responsabilidades (SRP)**, dividiendo el proyecto en capas bien definidas. A continuación, se presenta la estructura real del repositorio:
 
 ```text
 CALCULADORA-DE-AHORRO-PROGRAMADO/
@@ -183,11 +266,14 @@ CALCULADORA-DE-AHORRO-PROGRAMADO/
 │   └── test_db.py
 │
 ├── .gitignore                     # Archivos ignorados por Git (ej. pycache, secretos)
+├── app.py                         # Punto de entrada de la aplicación web (Flask)
 ├── buildozer.spec                 # Configuración para compilar APK en Android
 ├── calculadora_ahorro.spec        # Configuración de PyInstaller
 ├── main.py                        # Punto de entrada de la aplicación
 ├── README.md                      # Documentación del proyecto
 └── secret_config.py               # Credenciales de Render (NO SUBIR A GITHUB)
+```
+
 ---
 
 ## Entradas del Sistema
@@ -217,50 +303,21 @@ Si alguna condición falla, el sistema lanza **excepciones personalizadas** (Ej:
 
 ---
 
-## Ejecución de la Aplicación
+## Ejecución de Pruebas Unitarias
 
-### Prerrequisitos
-Asegúrate de tener Python 3.x instalado. Para la interfaz gráfica y la base de datos, instala las dependencias:
-
-```bash
-pip install kivy psycopg2
-```
-
-### Interfaz gráfica (GUI)
-El GUI está construido con Kivy. Para ejecutarlo, corre el siguiente comando **desde la raíz del proyecto**:
-
-```bash
-python src/view/gui_calculadora.py
-```
-
-Una vez abierta la aplicación, encontrarás los campos necesarios para ingresar tu meta de ahorro. Al presionar **"Calcular Ahorro"**, la aplicación mostrará el monto que debes ahorrar cada mes y gestionará el guardado en la base de datos.
-
-### Consola
-Si prefieres usar la versión de línea de comandos, ejecuta:
-
-```bash
-python src/view/console.py
-```
-
-El programa te pedirá los mismos datos de forma interactiva.
-
----
-
-##  Ejecución de Pruebas Unitarias
-
-**Ejecución Estándar**  
+**Ejecución Estándar**
 Este comando ejecuta las 9 pruebas (3 de insertar, 3 de buscar y 3 de modificar) de forma silenciosa, mostrándote los puntos de éxito:
 ```powershell
 python -m unittest tests.test_db
 ```
 
-**Ejecución Detallada (Recomendada para la entrega)**  
+**Ejecución Detallada (Recomendada para la entrega)**
 Usa la bandera `-v` (verbose) para que el sistema liste cada prueba individualmente y confirme que tanto los casos normales como los de error están pasando:
 ```powershell
 python -m unittest -v tests.test_db
 ```
 
-**Descubrimiento Automático**  
+**Descubrimiento Automático**
 Si decides agregar más archivos de prueba en la carpeta `tests`, este comando encontrará y ejecutará todos automáticamente:
 ```powershell
 python -m unittest discover -s src/tests -p "test*.py"
@@ -270,19 +327,19 @@ python -m unittest discover -s src/tests -p "test*.py"
 
 ---
 
-##  Principios de Código Limpio Aplicados
+## Principios de Código Limpio Aplicados
 
--  Programación Orientada a Objetos (POO) y Arquitectura MVC.
--  Separación de responsabilidades.
--  Validaciones robustas y tipado estricto (Type Hints).
--  Excepciones personalizadas con contexto.
--  Eliminación de "Números Mágicos" usando constantes.
--  Protección de credenciales usando `secret_config.py` y `.gitignore`.
--  Fixtures en pruebas (`setUp`) para limpieza automática de datos.
+- Programación Orientada a Objetos (POO) y Arquitectura MVC.
+- Separación de responsabilidades.
+- Validaciones robustas y tipado estricto (Type Hints).
+- Excepciones personalizadas con contexto.
+- Eliminación de "Números Mágicos" usando constantes.
+- Protección de credenciales usando `secret_config.py` y `.gitignore`.
+- Fixtures en pruebas (`setUp`) para limpieza automática de datos.
 
 ---
 
-##  Autores
+## Autores
 
 **Equipo de Desarrollo:**
 - **Jose Angel Martinez**
