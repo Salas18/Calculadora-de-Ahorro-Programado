@@ -9,3 +9,11 @@
 ***.pyc
 ***.pyo
 **.vscode
+# Archivos de configuración secretos
+.env
+secret_config.py
+
+# Carpetas de entorno y caché (recomendado)
+.venv/
+__pycache__/
+.buildozer/

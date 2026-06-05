@@ -1,5 +1,0 @@
-PG_HOST = "dpg-d81ar7gsfn5c73a2l070-a.oregon-postgres.render.com"
-PG_PORT = "5432"
-PG_DATABASE = "calculadora_ahorro"
-PG_USER = "salas18"
-PG_PASSWORD = "OyXLN6OLFMdldi0HA5GKwcA6GWeB7Mg0" 
