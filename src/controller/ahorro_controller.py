@@ -1,5 +1,6 @@
 import sys
 import os
+
 try:
     import src.secret_config as secret_config
 except ImportError:
@@ -10,16 +11,16 @@ except ImportError:
         PG_PASSWORD = os.getenv('PG_PASSWORD')
         PG_PORT = os.getenv('PG_PORT', '5432')
     secret_config = MockConfig()
-    
+
 ruta_raiz = os.path.abspath(os.path.join(os.path.dirname(__file__), '../..'))
 sys.path.append(ruta_raiz)
 sys.path.append(os.path.join(ruta_raiz, 'src'))
 
 import psycopg2
-import src.secret_config as secret_config
 from model.ahorro import Ahorro, AhorroProgramado
 from model.meta_ahorro import MetaAhorro
 from model.historial_calculo import HistorialCalculo
+
 
 class AhorroController:
     def calcular_y_guardar(id_usuario: int, ahorro: Ahorro):
@@ -87,13 +88,10 @@ class AhorroController:
             plazo=row[3], extra=row[4], mes_extra=row[5],
             cuota_mensual=row[6]
         )
-    
+
     @classmethod
     def insertar_ahorro(cls, ahorro):
         try:
-            import psycopg2
-            import src.secret_config as secret_config
-            
             connection = psycopg2.connect(
                 host=secret_config.PG_HOST,
                 database=secret_config.PG_DATABASE,
@@ -102,23 +100,21 @@ class AhorroController:
                 port=secret_config.PG_PORT
             )
             cursor = connection.cursor()
-            
-            
+
             cursor.execute("""
                 INSERT INTO metas_ahorro (id_usuario, meta, plazo, extra, mes_extra, cuota_mensual) 
                 VALUES (%s, %s, %s, %s, %s, %s)
             """, (
-                ahorro.id_usuario, 
-                ahorro.meta, 
-                ahorro.plazo, 
-                ahorro.extra, 
+                ahorro.id_usuario,
+                ahorro.meta,
+                ahorro.plazo,
+                ahorro.extra,
                 ahorro.mes_extra,
-                getattr(ahorro, 'cuota_mensual', 0.0)  
+                getattr(ahorro, 'cuota_mensual', 0.0)
             ))
-            
-            connection.commit() 
+
+            connection.commit()
             connection.close()
-            
+
         except Exception as e:
             raise Exception(f"Error en la base de datos al insertar: {e}")
-    

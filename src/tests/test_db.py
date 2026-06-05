@@ -7,7 +7,7 @@ ruta_raiz = os.path.abspath(os.path.join(os.path.dirname(__file__), '../..'))
 sys.path.append(ruta_raiz)
 sys.path.append(os.path.join(ruta_raiz, 'src'))
 
-import secret_config
+import src.secret_config as secret_config
 from src.model.usuario import Usuario
 from src.controller.usuario_controller import UsuarioController
 

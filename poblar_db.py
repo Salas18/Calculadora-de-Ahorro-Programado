@@ -10,7 +10,7 @@ sys.path.append(os.path.join(ruta_raiz, 'src'))
 try:
     from src import secret_config
 except ImportError:
-    import secret_config
+    import src.secret_config as secret_config
 
 try:
     print("Conectando directo a Render...")
