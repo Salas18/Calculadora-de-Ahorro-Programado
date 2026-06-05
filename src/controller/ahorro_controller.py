@@ -1,6 +1,16 @@
 import sys
 import os
-
+try:
+    import src.secret_config as secret_config
+except ImportError:
+    class MockConfig:
+        PG_HOST = os.getenv('PG_HOST')
+        PG_DATABASE = os.getenv('PG_DATABASE')
+        PG_USER = os.getenv('PG_USER')
+        PG_PASSWORD = os.getenv('PG_PASSWORD')
+        PG_PORT = os.getenv('PG_PORT', '5432')
+    secret_config = MockConfig()
+    
 ruta_raiz = os.path.abspath(os.path.join(os.path.dirname(__file__), '../..'))
 sys.path.append(ruta_raiz)
 sys.path.append(os.path.join(ruta_raiz, 'src'))
