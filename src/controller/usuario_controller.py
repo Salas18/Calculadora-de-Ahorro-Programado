@@ -6,7 +6,7 @@ sys.path.append(ruta_raiz)
 sys.path.append(os.path.join(ruta_raiz, 'src'))
 
 import psycopg2
-import secret_config
+import src.secret_config as secret_config
 from src.model.usuario import Usuario
 
 class UsuarioController:
